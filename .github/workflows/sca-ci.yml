@@ -1,0 +1,22 @@
+name: Orca SCA Scan Workflow
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  orca-sca-scan:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Run Orca SCA Scan
+      uses: orcasecurity/shiftleft-sca-action@v1
+      with:
+          api_token: ${{ secrets.ORCA_SECURITY_API_TOKEN }}
+          project_key: ${{ vars.ORCA_SECURITY_PROJECT_KEY }}
+          path:
+            "."
