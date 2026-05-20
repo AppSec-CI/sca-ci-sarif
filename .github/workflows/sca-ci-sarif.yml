@@ -1,0 +1,38 @@
+name: Orca SCA Scan Workflow
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    permissions:
+      contents: read
+      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
+      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Run Orca SCA Scan
+      id: orcasecurity_container_sca_scan
+      # uses: orcasecurity/shiftleft-sca-action@v1
+      uses: orcasecurity/shiftleft-fs-action@v1
+      with:
+          api_token: ${{ secrets.ORCA_SECURITY_API_TOKEN }}
+          project_key: ${{ vars.ORCA_SECURITY_PROJECT_KEY }}
+          path:
+            "."
+          format: "sarif"
+          output: "results/"
+
+    - name: Upload SARIF file
+      uses: github/codeql-action/upload-sarif@v3
+      if: ${{ always() && steps.orcasecurity_container_sca_scan.outputs.exit_code != 1 }}
+      with:
+        # sarif_file: results/sca.sarif 
+        sarif_file: results/file_system.sarif 
